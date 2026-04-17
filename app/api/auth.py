@@ -1,94 +1,156 @@
 # app/api/auth.py
-from flask import request, jsonify
-from ..models import  (Profiles, Students, Instructors, Users, UserRoles) 
-from ..utils.validators import check_user_exists, check_email_exists, is_valid_email, check_user_role
-from ..utils.security import hash_password
-from ..api import api_bp
-from ..services.user_service import create_users_bulk
 
-# Auth Routes
+from flask import request, jsonify
+
+from ..api import api_bp
+from ..models import Profiles, Students, Instructors, Users, UserRoles
+from ..services.user_service import create_users_bulk, check_require_fields
+from ..utils.security import hash_password
+from ..utils.validators import (
+    check_user_exists,
+    check_email_exists,
+    is_valid_email,
+    check_user_role,
+)
+
+
 @api_bp.route('/auth/register', methods=['POST'])
 def register():
-    '''Register new profile'''
+    """Register a new user profile."""
     try:
-        data: dict = request.get_json(silent=True) or {}
+        # Get JSON request body
+        data = request.get_json(silent=True) or {}
 
+        # Check if request body is empty
         if not data:
             return jsonify({'message': 'Request cannot be empty'}), 400
-        
-        # passed to the function services/user_service.py if data is list of objects
+
+        # Handle bulk registration
         if isinstance(data, list):
-            return create_users_bulk(data)
-        
-        requires = ['role', 'first_name', 'last_name', 'birth_date', 'gender', 'email', 'password']
-        for require in requires:
-            if require not in data:
-                return jsonify({'message': f'{require} is required'}), 400
-            if not data[require] or str(data[require]).strip() == '':
-                return jsonify({'message': f'{require} cannot be empty'}), 400
+            result = create_users_bulk(data)
 
-        if any(char.isdigit() for char in str(data['first_name'])):
-                return jsonify({'message': f"{data['first_name']} is invalid first name"}), 400
-        
-        if any(char.isdigit() for char in str(data['middle_name'])):
-                return jsonify({'message': f"{data['middle_name']} is invalid middle name"}), 400
-        
-        if any(char.isdigit() for char in str(data['last_name'])):
-                return jsonify({'message': f"{data['last_name']} is invalid last name"}), 400
-        
-        if check_user_exists(str(data['first_name']).strip(), str(data['last_name']).strip()):
-                return jsonify({'message': 'User already exists'}), 409 # Conflict: duplicate entry
-        
-        if check_email_exists(str(data['email']).strip()):
-                return jsonify({'message': 'Email already taken'}), 409 # Conflict: duplicate entry
-        
-        is_valid, error = is_valid_email(str(data['email']).strip())
+            # If something unexpected happened inside the service
+            if not result.get('success'):
+                return jsonify(result), 500
+
+            # Check if at least one account was saved
+            if len(result.get('saved_accounts', [])) > 0:
+                return jsonify(result), 201
+
+            # If nothing was saved, return validation errors
+            return jsonify(result), 400
+
+        # Check required fields
+        if not check_require_fields(data):
+            return jsonify({'message': 'Please fill all required fields'}), 400
+
+        # Clean input values
+        first_name = str(data.get('first_name', '')).strip()
+        middle_name = str(data.get('middle_name', '')).strip()
+        last_name = str(data.get('last_name', '')).strip()
+        email = str(data.get('email', '')).strip()
+        password = str(data.get('password', '')).strip()
+        role = str(data.get('role', '')).strip().lower()
+
+        # Validate first name
+        if any(char.isdigit() for char in first_name):
+            return jsonify({
+                'message': f'{first_name} is an invalid first name'
+            }), 400
+
+        # Validate middle name only if it has a value
+        if middle_name and any(char.isdigit() for char in middle_name):
+            return jsonify({
+                'message': f'{middle_name} is an invalid middle name'
+            }), 400
+
+        # Validate last name
+        if any(char.isdigit() for char in last_name):
+            return jsonify({
+                'message': f'{last_name} is an invalid last name'
+            }), 400
+
+        # Check if user already exists
+        if check_user_exists(first_name, last_name):
+            return jsonify({
+                'message': 'User already exists'
+            }), 409
+
+        # Validate email format
+        is_valid, email_or_error = is_valid_email(email)
+
         if not is_valid:
-                return jsonify({'message': f"\'{data['email']}\' {error}"}), 400
+            return jsonify({
+                'message': f"'{email}' {email_or_error}"
+            }), 400
 
+        # Use normalized email from validator
+        email = email_or_error
 
+        # Check if email already exists
+        if check_email_exists(email):
+            return jsonify({
+                'message': 'Email already taken'
+            }), 409
+
+        # Create profile record
         profile = Profiles(
-            first_name=str(data.get('first_name')).strip(),
-            middle_name=str(data.get('middle_name')).strip(),
-            last_name=str(data.get('last_name')).strip(),
+            first_name=first_name,
+            middle_name=middle_name,
+            last_name=last_name,
             suffix=data.get('suffix'),
             birth_date=data.get('birth_date'),
             gender=data.get('gender')
-            )
+        )
+        profile.save()
 
-        def create_account():
-            profile.save()
-            user = Users(
+        # Create user record
+        user = Users(
+            profile_id=profile.id,
+            email=email,
+            password=hash_password(password)
+        )
+        user.save()
+
+        # Create role mapping record
+        user_role = UserRoles(
+            user_id=user.id,
+            role_id=check_user_role(role)
+        )
+        user_role.save()
+
+        # Create student record
+        if role == 'student':
+            student = Students(
                 profile_id=profile.id,
-                email=str(data.get('email')).strip(),
-                password=hash_password(str(data.get('password')).strip())
+                year_level=data.get('year_level') or 0
             )
-            user.save()
-            user_role = UserRoles(
-                user_id=user.id,
-                role_id=check_user_role(data['role'])
-            )
-            user_role.save()
+            student.save()
 
-        match data:
-            case {'role' : 'student'}:
-                create_account()
-                new_student = Students(
-                    profile_id=profile.id,  # Get the profile.id
-                    year_level=data.get('year_level')
-                )
-                new_student.save()
-                return jsonify({'message': 'Profile for student is created', 'id': profile.id}), 201
-            
-            case {'role' : 'instructor'}:
-                create_account()   
-                new_instructor = Instructors(
-                    profile_id=profile.id  # Get the profile.id
-                )
-                new_instructor.save()
-                return jsonify({'message': 'Profile for instructor is created', 'id': profile.id}), 201
-            
-            case _:
-                return jsonify({'error': 'Double check the role'}), 500
+            return jsonify({
+                'message': 'Student profile created successfully',
+                'id': profile.id
+            }), 201
+
+        # Create instructor record
+        elif role == 'instructor':
+            instructor = Instructors(
+                profile_id=profile.id
+            )
+            instructor.save()
+
+            return jsonify({
+                'message': 'Instructor profile created successfully',
+                'id': profile.id
+            }), 201
+
+        # Invalid role
+        return jsonify({
+            'message': 'Invalid role provided'
+        }), 400
+
     except Exception as e:
-        return jsonify({'message': e})
+        return jsonify({
+            'message': 'Something went wrong',
+            'error': str(e)
+        }), 500

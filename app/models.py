@@ -17,7 +17,7 @@ class Profiles:
 
     @staticmethod
     def create_table():
-        '''Create table if it doesnt exists'''
+        '''Create table if it doesn't exists'''
         conn = get_db_connection()
         try:
             cursor = conn.cursor()
