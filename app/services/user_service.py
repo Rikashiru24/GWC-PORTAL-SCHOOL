@@ -5,8 +5,11 @@ from ..utils.validators import (
     check_user_exists,
     check_email_exists,
     check_user_role,
-    is_valid_email,
+    is_valid_email
 )
+from ..utils.send_email import send_login_credentials
+import random
+import string
 
 
 # List of fields required for every user
@@ -16,8 +19,7 @@ REQUIRED_FIELDS = [
     'last_name',
     'birth_date',
     'gender',
-    'email',
-    'password',
+    'email'
 ]
 
 
@@ -71,12 +73,12 @@ def create_users_bulk(data_list):
                 continue
 
             # Step 2: Clean and prepare user input
-            first_name = str(data.get('first_name', '')).strip()
+            first_name = str(data.get('first_name')).strip()
             middle_name = str(data.get('middle_name', '')).strip()
-            last_name = str(data.get('last_name', '')).strip()
-            email = str(data.get('email', '')).strip()
-            password = str(data.get('password', '')).strip()
-            role = str(data.get('role', '')).strip().lower()
+            last_name = str(data.get('last_name')).strip()
+            email = str(data.get('email')).strip()
+            password = "".join(random.choices(string.ascii_letters + string.digits, k=6))
+            role = str(data.get('role')).strip().lower()
 
             # Step 3: Validate names
             # Names should not contain numbers
@@ -137,7 +139,7 @@ def create_users_bulk(data_list):
                 first_name=first_name,
                 middle_name=middle_name,
                 last_name=last_name,
-                suffix=data.get('suffix'),
+                suffix=data.get('suffix', ""),
                 birth_date=data.get('birth_date'),
                 gender=data.get('gender')
             )
@@ -187,6 +189,7 @@ def create_users_bulk(data_list):
                 'email': email,
                 'role': role
             })
+            send_login_credentials(first_name, email, password)
 
         # Step 12: Return all results
         return {

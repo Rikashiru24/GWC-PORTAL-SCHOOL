@@ -1,19 +1,22 @@
 # app/api/auth.py
 
 from flask import request, jsonify
-
+import random
+import string
+from ..db import get_db_connection
 from ..api import api_bp
 from ..models import Profiles, Students, Instructors, Users, UserRoles
 from ..services.user_service import create_users_bulk, check_require_fields
-from ..utils.security import hash_password
+from ..utils.security import hash_password, check_password_hash
 from ..utils.validators import (
     check_user_exists,
     check_email_exists,
     is_valid_email,
     check_user_role,
 )
+from ..utils.send_email import send_login_credentials
 
-
+# Register One or in Bulk users
 @api_bp.route('/auth/register', methods=['POST'])
 def register():
     """Register a new user profile."""
@@ -45,11 +48,11 @@ def register():
             return jsonify({'message': 'Please fill all required fields'}), 400
 
         # Clean input values
-        first_name = str(data.get('first_name', '')).strip()
+        first_name = str(data.get('first_name')).strip()
         middle_name = str(data.get('middle_name', '')).strip()
-        last_name = str(data.get('last_name', '')).strip()
-        email = str(data.get('email', '')).strip()
-        password = str(data.get('password', '')).strip()
+        last_name = str(data.get('last_name')).strip()
+        email = str(data.get('email')).strip()
+        password = "".join(random.choices(string.ascii_letters + string.digits, k=6))
         role = str(data.get('role', '')).strip().lower()
 
         # Validate first name
@@ -119,6 +122,8 @@ def register():
         )
         user_role.save()
 
+        send_login_credentials(first_name, email, password)
+
         # Create student record
         if role == 'student':
             student = Students(
@@ -138,6 +143,7 @@ def register():
                 profile_id=profile.id
             )
             instructor.save()
+        
 
             return jsonify({
                 'message': 'Instructor profile created successfully',
@@ -154,3 +160,53 @@ def register():
             'message': 'Something went wrong',
             'error': str(e)
         }), 500
+
+
+# Login
+@api_bp.route('/auth/login', methods=['POST'])
+def login():
+    conn = get_db_connection()
+    try:
+        data = request.get_json(silent=True) or {}
+        email = data.get("email")
+        password = data.get("password")
+
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT profile_id, password, is_temporary FROM tbl_users WHERE email=%s"
+        cursor.execute(query, (email,))
+        user = cursor.fetchone()
+
+        # 2. Check if user exists AND if the password matches
+        if user and check_password_hash(user["password"], password):
+            # Flask requires jsonify to take a dictionary or list
+            return jsonify({"message": "login successful!",
+                            "profileId": user["profile_id"],
+                            "is_temporary": user["is_temporary"]}), 200
+
+        # 3. Always return something if the 'if' fails!
+        return jsonify({"message": "Invalid email or password"}), 401
+    except Exception as e:
+        print(f"Error logging in {e}")
+        return jsonify({"message": "Server error. Please try again later."}), 500
+    
+# Update Temporary Password
+@api_bp.route("/auth/update-password/<int:profileId>", methods=["PUT"])
+def update_password(profileId):
+    conn = get_db_connection()
+    try:
+        data = request.get_json(silent=True) or {}
+        password = data["newPassword"]
+        hash_pass = hash_password(password)
+        cursor = conn.cursor()
+        query = "UPDATE tbl_users SET password=%s, is_temporary=0 WHERE profile_id=%s"
+        cursor.execute(query, (hash_pass, profileId))
+        conn.commit()
+
+        if cursor.rowcount > 0:
+            return jsonify({"message": "Password successfully updated!"}), 200
+        return jsonify({"message": "Invalid"}), 404
+    except Exception as e:
+        return jsonify({f"Error: {e}"}), 500
+    finally:
+        conn.close()

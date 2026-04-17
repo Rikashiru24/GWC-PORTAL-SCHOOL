@@ -1,8 +1,13 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "cSpell.words": [
+        "dnspython",
         "dotenv",
+        "harvin",
+        "idna",
         "intructor",
-        "lastrowid"
+        "itsdangerous",
+        "lastrowid",
+        "Werkzeug"
     ]
 }

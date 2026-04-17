@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <form id="loginForm">
+        <h2>Login</h2>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <form id="updatePasswordForm" hidden>
+        <h2>Update Password</h2>
+        <label for="newPassword">New Password:</label><br>
+        <input type="password" id="newPassword" name="newPassword" required><br><br>
+        <button type="submit">Update Password</button>
+    </form>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevents the page from refreshing
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const loginData = {
+            email: email,
+            password: password
+        };
+        
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginData)
+            });
+
+            localStorage.removeItem("profileId"); // Clear any existing profileId before login
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Login Successful!');
+                // Redirect based on the role your API returns
+                profileId = result.profileId; // Assuming your API returns a profileId
+                localStorage.setItem("profileId", profileId); // Store profileId in localStorage
+
+                // Check if the password is still temporary
+                if (result.is_temporary === 1) {
+                    // Show the password change form
+                    document.getElementById("loginForm").hidden = true;
+                    document.getElementById("updatePasswordForm").hidden = false;
+                } else {
+                    // Skip the form and go straight to the dashboard
+                    window.location.href = './dashboard.html';
+                }
+            } else {
+                alert('Login Failed: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong with the server.');
+        }
+    });
+
+
+// update password form submission
+    document.getElementById('updatePasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevents the page from refreshing
+
+        const newPassword = document.getElementById('newPassword').value;
+        const profileId = localStorage.getItem("profileId"); // Get profileId from localStorage
+        
+        const updateData = {
+            newPassword: newPassword
+        };
+        
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/auth/update-password/${profileId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            }); 
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Password Updated Successfully!');
+                // Redirect to dashboard or another page
+                window.location.href = './dashboard.html'; // Redirect to dashboard
+            } else {
+                alert('Password Update Failed: ' + result.message);
+            }} catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong with the server.');
+        }
+    });
+</script>
+
+</body>
+</html>

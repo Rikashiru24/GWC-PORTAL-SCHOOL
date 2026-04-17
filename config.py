@@ -14,3 +14,7 @@ class Config:
     DB_USER = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     DB_NAME = os.getenv('DB_NAME')
+
+    # email sender credentials
+    EMAIL_SENDER = os.getenv("EMAIL_SENDER")
+    EMAIL_PASS = os.getenv("EMAIL_PASS")

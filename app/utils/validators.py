@@ -66,7 +66,6 @@ def check_user_role(role):
         if result:
             return result['id']  # Access the first column (id)
         return None
-
     except Exception as e:
         print(f'Error fetching role: {e}')
         return None
