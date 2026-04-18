@@ -13,4 +13,13 @@ for user in users:
             "email": user["email"]
         }
         )
-print(user_list[0])
+# print(user_list)
+
+classes = [{'Subject': 'Introduction to Computer Science', 'Instructor': 'Harvin Risga'}, 
+ {'Subject': 'Programming Fundamentals', 'Instructor': 'Harvin Risga'}, 
+ {'Subject': 'College Algebra', 'Instructor': 'Roberto Gonzales'}, 
+ {'Subject': 'English Composition', 'Instructor': 'Jose Rizal'}, 
+ {'Subject': 'Physics for Computing', 'Instructor': 'Harvin Risga'}]
+
+for cl in classes:
+    print(cl["Subject"])

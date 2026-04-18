@@ -9,4 +9,4 @@ CORS(api_bp, origins="*")
 
 from . import auth
 from . import view
-# from . import students
+from . import students

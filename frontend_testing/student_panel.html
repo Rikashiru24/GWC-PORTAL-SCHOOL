@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Panel</title>
+</head>
+<body>
+    welcome to dashboard <br>
+
+    User ID: <span id="userId"></span><br>
+    Name: <span id="firstName"></span><br>
+    Email: <span id="email"></span><br><br>
+    <button onclick="window.location.href='./enrollment_view.html'">Enrollment</button>
+
+<script>
+    // Retrieve the user ID from localStorage and display it
+    const userId = localStorage.getItem("userId");
+    const firstName = localStorage.getItem("firstName");
+    const email = localStorage.getItem("email");
+    document.getElementById("userId").textContent = userId ? userId : "No user ID found.";
+    document.getElementById("firstName").textContent = firstName ? firstName : "No first name found.";
+    document.getElementById("email").textContent = email ? email : "No email found.";
+</script>
+</body>
+</html>

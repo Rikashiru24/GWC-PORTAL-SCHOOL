@@ -15,6 +15,7 @@ from ..utils.validators import (
     check_user_role,
 )
 from ..utils.send_email import send_login_credentials
+from ..utils.decorators import generate_token
 
 # Register One or in Bulk users
 @api_bp.route('/auth/register', methods=['POST'])
@@ -174,7 +175,7 @@ def login():
 
         cursor = conn.cursor(dictionary=True)
 
-        query = """SELECT p.first_name, u.profile_id, u.password, u.is_temporary FROM tbl_users u
+        query = """SELECT u.email, p.first_name, u.id, u.password, u.is_temporary FROM tbl_users u
                     INNER JOIN tbl_profiles p
                     ON u.profile_id = p.id
                     WHERE u.email=%s"""
@@ -182,11 +183,19 @@ def login():
         user = cursor.fetchone()
 
         # 2. Check if user exists AND if the password matches
-        if user and check_password_hash(user["password"], password):
+        # 1. validate user before generating token
+        # if user and check_password_hash(user["password"], password):
+        if user["email"] == email and user["password"] == password: # temporary for testing only
             # Flask requires jsonify to take a dictionary or list
+            
+            # generate token
+            token = generate_token(user["id"], email)
+
             return jsonify({"message": "login successful!",
+                            "token": token,
+                            "email": user["email"],
                             "first_name": user["first_name"],
-                            "profile_id": user["profile_id"],
+                            "user_id": user["id"],
                             "is_temporary": user["is_temporary"]}), 200
 
         # 3. Always return something if the 'if' fails!

@@ -43,18 +43,24 @@
                 body: JSON.stringify(loginData)
             });
 
-            localStorage.removeItem("profileId"); // Clear any existing profileId before login
+            localStorage.removeItem("userId"); // Clear any existing userId before login
             localStorage.removeItem("firstName");
+            localStorage.removeItem("token");
+            localStorage.removeItem("email");
 
             const result = await response.json();
 
             if (response.ok) {
                 alert('Login Successful!');
                 // Redirect based on the role your API returns
+                student_email = result.email; // Assuming your API returns an email
+                localStorage.setItem("email", student_email); // Store email in localStorage
+                token = result.token; // Assuming your API returns a token
+                localStorage.setItem("token", token); // Store token in localStorage
                 firstName = result.first_name; // Assuming your API returns a first_name
                 localStorage.setItem("firstName", firstName); // Store firstName in localStorage
-                profileId = result.profile_id; // Assuming your API returns a profileId
-                localStorage.setItem("profileId", profileId); // Store profileId in localStorage
+                userId = result.user_id; // Assuming your API returns a user_id
+                localStorage.setItem("userId", userId); // Store userId in localStorage
 
                 // Check if the password is still temporary
                 if (result.is_temporary === 1) {
@@ -63,7 +69,7 @@
                     document.getElementById("updatePasswordForm").hidden = false;
                 } else {
                     // Skip the form and go straight to the dashboard
-                    window.location.href = './dashboard.html';
+                    window.location.href = './student_panel.html';
                 }
             } else {
                 alert('Login Failed: ' + result.message);
@@ -74,20 +80,19 @@
         }
     });
 
-
 // update password form submission
     document.getElementById('updatePasswordForm').addEventListener('submit', async function(e) {
         e.preventDefault(); // Prevents the page from refreshing
 
         const newPassword = document.getElementById('newPassword').value;
-        const profileId = localStorage.getItem("profileId"); // Get profileId from localStorage
+        const userId = localStorage.getItem("userId"); // Get userId from localStorage
         
         const updateData = {
             newPassword: newPassword
         };
         
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/auth/update-password/${profileId}`, {
+            const response = await fetch(`http://127.0.0.1:5000/api/auth/update-password/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -99,7 +104,7 @@
             if (response.ok) {
                 alert('Password Updated Successfully!');
                 // Redirect to dashboard or another page
-                window.location.href = './dashboard.html'; // Redirect to dashboard
+                window.location.href = './student_panel.html'; // Redirect to dashboard
             } else {
                 alert('Password Update Failed: ' + result.message);
             }} catch (error) {

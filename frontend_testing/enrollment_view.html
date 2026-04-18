@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment View</title>
+</head>
+<body>
+    <h1>Enrollment Details</h1>
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align: start; border-right: 1px solid;">Subjects</th>
+                <th style="text-align: start; border-right: 1px solid;">Instructors</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="subjects">Mathematics</td>
+                <td id="instructor">Mr. Smith</td>
+            </tr>
+        </tbody>
+    </table>
+
+<script>
+    const API_URL = 'http://127.0.0.1:5000/api/student_panel';
+
+    async function loadEnrollmentData() {
+        // 1. Get the token (stored during login)
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            alert("No token found! Please log in.");
+            return;
+        }
+
+        try {
+            // 2. Fetch data with the Bearer Token
+            const response = await fetch(API_URL, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const tableBody = document.querySelector('tbody');
+                tableBody.innerHTML = ''; // Clear the hardcoded "Mathematics" row
+
+                // 3. Loop through results and build table rows
+                data.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td style="border-right: 1px solid;">${item.subject}</td>
+                            <td>${item.instructor}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                console.error("Error:", data.message);
+                alert("Failed to load data: " + data.message);
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+        }
+    }
+
+    // Run the function when the page loads
+    window.onload = loadEnrollmentData;
+</script>
+</body>
+</html>
