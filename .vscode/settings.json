@@ -1,13 +1,16 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "cSpell.words": [
+        "Arisga",
         "dnspython",
         "dotenv",
         "harvin",
+        "iaxfntyljicrrgcg",
         "idna",
         "intructor",
         "itsdangerous",
         "lastrowid",
         "Werkzeug"
-    ]
+    ],
+    "workbench.colorTheme": "Dark Modern"
 }

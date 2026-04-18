@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>User Registration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f4f8;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 2rem 1.5rem;
+            color: #1a2c3e;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e3c72, #2b4c7c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            color: #4a627a;
+            margin-top: 0.4rem;
+            font-weight: 400;
+        }
+
+        /* Grid layout: two columns */
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+            overflow: hidden;
+            flex: 1;
+            min-width: 320px;
+            border: 1px solid #e2edf2;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: #f9fbfd;
+            padding: 1.25rem 1.8rem;
+            border-bottom: 1px solid #e9eef3;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #0f2b3d;
+        }
+
+        .card-header h2 i {
+            font-weight: 400;
+            font-size: 1.6rem;
+        }
+
+        .card-body {
+            padding: 1.8rem;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2c5a7a;
+            margin-bottom: 0.4rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #ffffff;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.2);
+        }
+
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            border: none;
+            background: #1e4a6e;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #1f6392;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary:hover {
+            background: #0f4b6e;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1.5px solid #cbdde6;
+            color: #1f6392;
+        }
+
+        .btn-outline:hover {
+            background: #f0f6fa;
+            border-color: #7f9eb5;
+        }
+
+        .response-area {
+            margin-top: 1.5rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+            font-size: 0.85rem;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            border-left: 4px solid #2c7da0;
+            max-height: 320px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .bulk-hint {
+            background: #eef2ff;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.8rem;
+            color: #1e3a5f;
+        }
+
+        .bulk-hint code {
+            background: #e0e7ff;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+
+        .file-zone {
+            border: 2px dashed #cbdde6;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: #fefefe;
+        }
+
+        hr {
+            margin: 1rem 0;
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, #e2e8f0, transparent);
+        }
+
+        .badge {
+            background: #e6f4ea;
+            color: #2b6e3c;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 880px) {
+            body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>👥 User Management · Registration</h1>
+        <p>Admin panel — Register individual users or upload multiple records via JSON (bulk). Compatible with your backend API.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- SINGLE REGISTRATION CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 1. Register Single User</h2>
+            </div>
+            <div class="card-body">
+                <form id="singleUserForm">
+                    <div class="row-2col">
+                        <div class="form-group">
+                            <label>First name *</label>
+                            <input type="text" id="first_name" placeholder="e.g., Maria" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Middle name</label>
+                            <input type="text" id="middle_name" placeholder="Optional">
+                        </div>
+                    </div>
+                    <div class="row-2col">
+                        <div class="form-group">
+                            <label>Last name *</label>
+                            <input type="text" id="last_name" placeholder="e.g., Santos" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Suffix</label>
+                            <input type="text" id="suffix" placeholder="Jr., III, etc.">
+                        </div>
+                    </div>
+                    <div class="row-2col">
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email" placeholder="user@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Role *</label>
+                            <select id="role" required>
+                                <option value="student">Student</option>
+                                <option value="instructor">Instructor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-2col">
+                        <div class="form-group">
+                            <label>Birth date *</label>
+                            <input type="date" id="birth_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender *</label>
+                            <select id="gender" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Year level (only for students)</label>
+                        <input type="number" id="year_level" placeholder="1,2,3,4" value="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">✨ Create Single User</button>
+                </form>
+                <div id="singleResponse" class="response-area" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- BULK REGISTRATION CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📦 2. Bulk Register (JSON Array)</h2>
+            </div>
+            <div class="card-body">
+                <div class="bulk-hint">
+                    📌 <strong>Bulk upload format</strong> — Send a JSON array of user objects. Each object must contain:<br>
+                    <code>first_name, last_name, email, role, birth_date, gender</code> (optional: middle_name, suffix, year_level).<br>
+                    Example: <code>[{"first_name":"Ana","last_name":"Reyes","email":"ana@school.com","role":"student","birth_date":"2005-06-15","gender":"Female","year_level":2}]</code>
+                </div>
+                <div class="file-zone">
+                    <label style="display: inline-block; margin-bottom: 0.5rem;">📂 Upload JSON file</label>
+                    <input type="file" id="bulkJsonFile" accept=".json" style="border: none; padding: 0.3rem 0;">
+                    <div style="margin-top: 0.6rem;">
+                        <button type="button" id="previewBulkBtn" class="btn-outline" style="width: auto; padding: 0.4rem 1rem;">👁️ Preview JSON</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>✏️ Or paste bulk JSON array directly</label>
+                    <textarea id="bulkJsonRaw" rows="6" placeholder='[
+  {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "role": "student",
+    "birth_date": "2000-01-01",
+    "gender": "Male",
+    "year_level": 2
+  }
+]' style="font-family: monospace;"></textarea>
+                </div>
+                <button id="submitBulkBtn" class="btn btn-primary">🚀 Submit Bulk Registration</button>
+                <div id="bulkResponse" class="response-area" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========================
+    // CONFIGURATION: Backend API endpoint
+    // ========================
+    // !!! CHANGE THIS TO YOUR ACTUAL API URL (the /auth/register endpoint)
+    const API_REGISTER_URL = 'http://127.0.0.1:5000/api/auth/register';   // Replace with your backend base + endpoint
+    // Example: 'https://yourdomain.com/api/auth/register'  or relative path if served same origin
+
+    // Helper: Show response in designated container
+    function showResponse(containerId, data, isError = false) {
+        const container = document.getElementById(containerId);
+        container.style.display = 'block';
+        let prettyHtml = '';
+        if (isError) {
+            prettyHtml = `<div style="color:#b91c1c; border-left-color:#b91c1c;"><strong>⚠️ Error</strong><br>${escapeHtml(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</div>`;
+        } else {
+            prettyHtml = `<div style="color:#14532d;"><strong>✅ Server Response</strong><br><pre style="margin-top:6px; background:#f1f5f9; padding:8px; border-radius:10px; overflow-x:auto;">${escapeHtml(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</pre></div>`;
+        }
+        container.innerHTML = prettyHtml;
+        // auto scroll into view
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // Helper: Send POST request to API
+    async function sendRegisterRequest(payload, isBulk = false) {
+        try {
+            const response = await fetch(API_REGISTER_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            let responseData;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                responseData = await response.json();
+            } else {
+                responseData = { message: await response.text() || 'Unexpected server response' };
+            }
+            return { ok: response.ok, status: response.status, data: responseData };
+        } catch (err) {
+            return { ok: false, status: 0, data: { message: 'Network error: Could not reach API. Check CORS or endpoint URL.', error: err.message } };
+        }
+    }
+
+    // ========== SINGLE USER HANDLER ==========
+    document.getElementById('singleUserForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const singleResponseDiv = document.getElementById('singleResponse');
+        singleResponseDiv.style.display = 'none';
+
+        // gather fields
+        const first_name = document.getElementById('first_name').value.trim();
+        const middle_name = document.getElementById('middle_name').value.trim();
+        const last_name = document.getElementById('last_name').value.trim();
+        const suffix = document.getElementById('suffix').value.trim() || "";
+        const email = document.getElementById('email').value.trim();
+        const role = document.getElementById('role').value;
+        const birth_date = document.getElementById('birth_date').value;
+        const gender = document.getElementById('gender').value;
+        let year_level = document.getElementById('year_level').value;
+        
+        if (!first_name || !last_name || !email || !birth_date || !gender) {
+            showResponse('singleResponse', { message: 'Please fill all required fields (*).' }, true);
+            return;
+        }
+        if (role === 'student' && (!year_level || isNaN(year_level))) year_level = 0;
+        
+        const singlePayload = {
+            first_name,
+            middle_name,
+            last_name,
+            suffix,
+            email,
+            role,
+            birth_date,
+            gender,
+            year_level: role === 'student' ? parseInt(year_level) || 0 : undefined
+        };
+        // Remove undefined year_level for instructor to keep payload clean
+        if (role !== 'student') delete singlePayload.year_level;
+
+        // Disable button during request
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = '⏳ Creating...';
+        submitBtn.disabled = true;
+
+        const result = await sendRegisterRequest(singlePayload, false);
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+
+        if (result.ok) {
+            showResponse('singleResponse', result.data, false);
+            // Optionally reset form? Not resetting by default, but user can refresh manually.
+            if (result.status === 201) {
+                // lightly clear password hint: but just show success
+                document.getElementById('singleUserForm').reset();
+                // set default year level after reset
+                document.getElementById('year_level').value = '1';
+                document.getElementById('role').value = 'student';
+            }
+        } else {
+            showResponse('singleResponse', result.data || { message: 'Request failed', status: result.status }, true);
+        }
+    });
+
+    // ========== BULK HANDLER ==========
+    const bulkRawTextarea = document.getElementById('bulkJsonRaw');
+    const fileInput = document.getElementById('bulkJsonFile');
+    const previewBtn = document.getElementById('previewBulkBtn');
+    const submitBulkBtn = document.getElementById('submitBulkBtn');
+    const bulkResponseDiv = document.getElementById('bulkResponse');
+
+    // Helper: parse and validate JSON array
+    function parseBulkJson(rawJsonString) {
+        try {
+            let parsed = JSON.parse(rawJsonString);
+            if (!Array.isArray(parsed)) {
+                return { valid: false, error: 'Root element must be a JSON array (list of users).' };
+            }
+            if (parsed.length === 0) {
+                return { valid: false, error: 'Array is empty. Provide at least one user object.' };
+            }
+            // basic check for required fields per object (we will let backend validate fully, but client hint)
+            for (let i = 0; i < parsed.length; i++) {
+                const user = parsed[i];
+                const required = ['first_name', 'last_name', 'email', 'role', 'birth_date', 'gender'];
+                const missing = required.filter(field => !user[field] || String(user[field]).trim() === '');
+                if (missing.length) {
+                    return { valid: false, error: `User at index ${i} missing required fields: ${missing.join(', ')}` };
+                }
+                if (user.role !== 'student' && user.role !== 'instructor') {
+                    return { valid: false, error: `User at index ${i} has invalid role: "${user.role}". Must be "student" or "instructor".` };
+                }
+            }
+            return { valid: true, data: parsed };
+        } catch (err) {
+            return { valid: false, error: `Invalid JSON: ${err.message}` };
+        }
+    }
+
+    // Preview file content into textarea
+    previewBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            showResponse('bulkResponse', { message: 'Please select a JSON file first.' }, true);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const content = evt.target.result;
+            bulkRawTextarea.value = content;
+            // optional: validate preview
+            const validation = parseBulkJson(content);
+            if (!validation.valid) {
+                showResponse('bulkResponse', { message: `⚠️ Preview validation warning: ${validation.error}` }, true);
+            } else {
+                showResponse('bulkResponse', { message: `✅ JSON looks valid! ${validation.data.length} user(s) ready.` }, false);
+            }
+        };
+        reader.onerror = function() {
+            showResponse('bulkResponse', { message: 'Failed to read file.' }, true);
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+
+    // Submit bulk registration
+    submitBulkBtn.addEventListener('click', async () => {
+        bulkResponseDiv.style.display = 'none';
+        let rawJson = bulkRawTextarea.value.trim();
+        if (!rawJson) {
+            showResponse('bulkResponse', { message: 'Please provide bulk JSON data (either paste or upload file).' }, true);
+            return;
+        }
+        const validation = parseBulkJson(rawJson);
+        if (!validation.valid) {
+            showResponse('bulkResponse', { message: `Invalid bulk data: ${validation.error}` }, true);
+            return;
+        }
+        const bulkPayload = validation.data;  // array of user objects
+
+        // disable button to avoid double submit
+        submitBulkBtn.disabled = true;
+        const originalBtnText = submitBulkBtn.innerText;
+        submitBulkBtn.innerText = '⏳ Processing bulk...';
+
+        const result = await sendRegisterRequest(bulkPayload, true);
+        submitBulkBtn.disabled = false;
+        submitBulkBtn.innerText = originalBtnText;
+
+        if (result.ok) {
+            // Backend returns detailed info: saved_accounts, duplicate_users, invalid_emails, failed_records
+            showResponse('bulkResponse', result.data, false);
+            // If server returns 201 or 200 we display summary
+            if (result.data && result.data.saved_accounts) {
+                const savedCount = result.data.saved_accounts.length;
+                const duplicateCount = result.data.duplicate_users?.length || 0;
+                const invalidCount = result.data.invalid_emails?.length || 0;
+                const failedCount = result.data.failed_records?.length || 0;
+                // optional extra message
+                const summaryMsg = `📊 Summary: ${savedCount} created, ${duplicateCount} duplicate users, ${invalidCount} invalid emails, ${failedCount} other failures.`;
+                const existingDiv = document.getElementById('bulkResponse');
+                const extraSpan = document.createElement('div');
+                extraSpan.style.marginTop = '8px';
+                extraSpan.style.fontWeight = '500';
+                extraSpan.innerHTML = summaryMsg;
+                if (!existingDiv.querySelector('.summary-custom')) {
+                    const summaryDiv = document.createElement('div');
+                    summaryDiv.className = 'summary-custom';
+                    summaryDiv.style.background = '#eef2ff';
+                    summaryDiv.style.padding = '6px 10px';
+                    summaryDiv.style.borderRadius = '12px';
+                    summaryDiv.style.marginTop = '10px';
+                    summaryDiv.innerHTML = summaryMsg;
+                    existingDiv.appendChild(summaryDiv);
+                }
+            }
+        } else {
+            showResponse('bulkResponse', result.data || { message: 'Bulk registration failed. Check server logs.' }, true);
+        }
+    });
+
+    // Additional helper: if file selected & textarea empty, auto read? optional, but we keep preview explicit.
+    // Also add sample prefill for demo convenience (example)
+    const exampleBulk = `[
+  {
+    "first_name": "Liam",
+    "middle_name": "A.",
+    "last_name": "Cruz",
+    "email": "liam.cruz@university.edu",
+    "role": "student",
+    "birth_date": "2002-07-19",
+    "gender": "Male",
+    "year_level": 3,
+    "suffix": ""
+  },
+  {
+    "first_name": "Emma",
+    "last_name": "Rivera",
+    "email": "emma.rivera@college.edu",
+    "role": "instructor",
+    "birth_date": "1990-11-02",
+    "gender": "Female"
+  }
+]`;
+    // optional: prefill only if textarea is empty (non-intrusive)
+    if (!bulkRawTextarea.value.trim()) {
+        bulkRawTextarea.value = exampleBulk;
+    }
+    // also add note for API endpoint: in case of missing backend URL, user can update variable.
+    if (API_REGISTER_URL === '/api/auth/register') {
+        const styleWarn = document.createElement('div');
+        styleWarn.style.background = '#fff3cd';
+        styleWarn.style.borderRadius = '12px';
+        styleWarn.style.padding = '0.6rem 1rem';
+        styleWarn.style.marginBottom = '1rem';
+        styleWarn.style.fontSize = '0.8rem';
+        styleWarn.style.border = '1px solid #ffe0a3';
+        styleWarn.innerHTML = '🔧 <strong>Configuration note:</strong> The API endpoint is set to <code>/api/auth/register</code>. Update the <code>API_REGISTER_URL</code> variable in script if your backend runs on a different path/domain.';
+        document.querySelector('.container').insertBefore(styleWarn, document.querySelector('.dashboard-grid'));
+    }
+</script>
+</body>
+</html>

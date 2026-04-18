@@ -6,7 +6,7 @@ import string
 from ..db import get_db_connection
 from ..api import api_bp
 from ..models import Profiles, Students, Instructors, Users, UserRoles
-from ..services.user_service import create_users_bulk, check_require_fields
+from ..services.bulk_service import create_users_bulk, check_require_fields
 from ..utils.security import hash_password, check_password_hash
 from ..utils.validators import (
     check_user_exists,
@@ -23,6 +23,7 @@ def register():
     try:
         # Get JSON request body
         data = request.get_json(silent=True) or {}
+        
 
         # Check if request body is empty
         if not data:
@@ -173,7 +174,10 @@ def login():
 
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT profile_id, password, is_temporary FROM tbl_users WHERE email=%s"
+        query = """SELECT p.first_name, u.profile_id, u.password, u.is_temporary FROM tbl_users u
+                    INNER JOIN tbl_profiles p
+                    ON u.profile_id = p.id
+                    WHERE u.email=%s"""
         cursor.execute(query, (email,))
         user = cursor.fetchone()
 
@@ -181,7 +185,8 @@ def login():
         if user and check_password_hash(user["password"], password):
             # Flask requires jsonify to take a dictionary or list
             return jsonify({"message": "login successful!",
-                            "profileId": user["profile_id"],
+                            "first_name": user["first_name"],
+                            "profile_id": user["profile_id"],
                             "is_temporary": user["is_temporary"]}), 200
 
         # 3. Always return something if the 'if' fails!

@@ -44,13 +44,16 @@
             });
 
             localStorage.removeItem("profileId"); // Clear any existing profileId before login
+            localStorage.removeItem("firstName");
 
             const result = await response.json();
 
             if (response.ok) {
                 alert('Login Successful!');
                 // Redirect based on the role your API returns
-                profileId = result.profileId; // Assuming your API returns a profileId
+                firstName = result.first_name; // Assuming your API returns a first_name
+                localStorage.setItem("firstName", firstName); // Store firstName in localStorage
+                profileId = result.profile_id; // Assuming your API returns a profileId
                 localStorage.setItem("profileId", profileId); // Store profileId in localStorage
 
                 // Check if the password is still temporary

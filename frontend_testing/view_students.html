@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Students</title>
+</head>
+<body>
+<table style="border-collapse: collapse; width: 50%;">
+    <thead>
+        <tr style="border-bottom: 2px solid black;">
+            <th style="text-align: left; border-right: 2px solid black;">First Name</th>
+            <th style="text-align: left; border-right: 2px solid black;">Last Name</th>
+            <th style="text-align: left; border-right: 2px solid black;">Email</th>
+        </tr>
+    </thead>
+        <tbody>
+            <tr>
+                <td id="firstName">Harvin</td>
+                <td id="lastName">Arisga</td>
+                <td id="email">example@example.com</td>
+            </tr>
+        </tbody>
+    </table>
+
+<script>
+// 1. Define the API endpoint (URL) you want to get data from
+const API_URL = 'http://127.0.0.1:5000/api/users';
+
+// 2. Create an async function to handle the fetching and rendering
+async function loadTableData() {
+    try {
+        // 3. Fetch data from the API
+        const response = await fetch(API_URL);
+        
+        // 4. Convert the raw response into a usable JSON object (array of people)
+        const people = await response.json();
+
+        // 5. Select the table body from your HTML
+        const tableBody = document.querySelector("table tbody");
+
+        // 6. Clear any existing placeholder rows
+        tableBody.innerHTML = "";
+
+        // 7. Loop through the API data and create a row for each person
+        people.forEach(person => {
+            const row = document.createElement("tr");
+            
+            // Keep your style consistent with the header
+            row.style.borderBottom = "2px solid black";
+
+            // Note: Map the API keys (like 'name' or 'email') to your columns
+            row.innerHTML = `
+                <td style="text-align: left; border-right: 2px solid black; padding: 10px;">${person.first_name}</td>
+                <td style="text-align: left; border-right: 2px solid black; padding: 10px;">${person.last_name}</td>
+                <td style="text-align: left; border-right: 2px solid black; padding: 10px;">${person.email}</td>
+            `;
+
+            // 8. Add the new row to your table
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        // 9. Log any errors (like network issues) to the console
+        console.error("Error fetching data:", error);
+    }
+}
+
+// 10. Call the function to start the process
+loadTableData();
+
+</script>
+</body>
+</html>
